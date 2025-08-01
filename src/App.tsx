@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginForm from './components/LoginForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserMenu from './components/UserMenu';
+import Sidebar from './components/Sidebar';
 import FuncionarioModal from './components/modals/FuncionarioModal';
 import TreinamentoModal from './components/modals/TreinamentoModal';
 import { 
@@ -112,6 +113,7 @@ function MainApp() {
   const [treinamentoModalOpen, setTreinamentoModalOpen] = useState(false);
   const [selectedFuncionario, setSelectedFuncionario] = useState<Funcionario | undefined>();
   const [selectedTreinamento, setSelectedTreinamento] = useState<Treinamento | undefined>();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Stats calculations
   const totalFuncionarios = mockFuncionarios.length;
@@ -133,111 +135,15 @@ function MainApp() {
     // Here you would call your API
   };
 
-  const renderNavigation = () => (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <Shield className="h-8 w-8 text-blue-600" />
-            <h1 className="text-xl font-bold text-gray-900">Gestão de Treinamentos</h1>
-          </div>
-          <div className="flex items-center space-x-6">
-            <button
-              onClick={() => setActiveSection('dashboard')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'dashboard' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span>Dashboard</span>
-            </button>
-            
-            {canView && (
-              <>
-                <button
-                  onClick={() => setActiveSection('funcionarios')}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeSection === 'funcionarios' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <Users className="h-4 w-4" />
-                  <span>Funcionários</span>
-                </button>
-                
-                <button
-                  onClick={() => setActiveSection('treinamentos')}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeSection === 'treinamentos' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <span>Treinamentos</span>
-                </button>
-                
-                <button
-                  onClick={() => setActiveSection('realizados')}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeSection === 'realizados' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <GraduationCap className="h-4 w-4" />
-                  <span>Realizados</span>
-                </button>
-                
-                <button
-                  onClick={() => setActiveSection('conformidade')}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeSection === 'conformidade' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Conformidade</span>
-                </button>
-              </>
-            )}
-            
-            {user?.perfil === 'Admin' && (
-              <>
-                <button
-                  onClick={() => setActiveSection('obrigatorios')}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeSection === 'obrigatorios' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>Obrigatórios</span>
-                </button>
-                
-                <button
-                  onClick={() => setActiveSection('relatorios')}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeSection === 'relatorios' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>Relatórios</span>
-                </button>
-              </>
-            )}
-          </div>
-          <UserMenu />
-        </div>
+  const renderTopBar = () => (
+    <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
+      <div className="flex items-center space-x-4">
+        <h2 className="text-xl font-semibold text-gray-900 capitalize">
+          {activeSection === 'realizados' ? 'Treinamentos Realizados' : activeSection}
+        </h2>
       </div>
-    </nav>
+      <UserMenu />
+    </header>
   );
 
   const renderDashboard = () => (
@@ -845,11 +751,22 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {renderNavigation()}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderContent()}
-      </main>
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
+      />
+      
+      <div className="flex-1 flex flex-col">
+        {renderTopBar()}
+        <main className="flex-1 p-6 overflow-auto">
+          <div className="max-w-7xl mx-auto">
+            {renderContent()}
+          </div>
+        </main>
+      </div>
 
       <FuncionarioModal
         isOpen={funcionarioModalOpen}
